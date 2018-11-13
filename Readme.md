@@ -1,6 +1,6 @@
 # GitAuthorStats
 
-Writes about authors that create the most code.
+Detect authors that wrote the most code in repository.
 
 # Examples
 
