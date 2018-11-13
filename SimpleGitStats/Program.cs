@@ -9,8 +9,6 @@ namespace SimpleGitStats
 {
 	internal class Program
 	{
-		#region Поля и свойства
-
 		[Argument(0, Description = "Git repository location")]
 		public string Location { get; set; }
 
@@ -20,26 +18,30 @@ namespace SimpleGitStats
 		[Option(Description = "Until <date>. For example, 31 December, 2018")]
 		public string Until { get; set; }
 
-		#endregion
-
-		#region Методы
-
 		public static int Main(string[] args)
 		{
 			return CommandLineApplication.Execute<Program>(args);
 		}
 
+		// ReSharper disable once UnusedMember.Local
 		private void OnExecute()
 		{
 			GitNativeClient.Initialize();
 
-			var client = string.IsNullOrEmpty(Location) ? new GitNativeClient() : new GitNativeClient(Location);
+			GitNativeClient client = string.IsNullOrEmpty(this.Location) ? new GitNativeClient() : new GitNativeClient(this.Location);
 
-			var commitPerAuthorArgs = "shortlog -sn --no-merges";
-			if (!string.IsNullOrWhiteSpace(Since)) commitPerAuthorArgs += $" --since=\"{Since}\"";
-			if (!string.IsNullOrWhiteSpace(Until)) commitPerAuthorArgs += $" --until=\"{Until}\"";
+			string commitPerAuthorArgs = "shortlog -sn --no-merges";
+			if (!string.IsNullOrWhiteSpace(this.Since))
+			{
+				commitPerAuthorArgs += $" --since=\"{this.Since}\"";
+			}
 
-			var commitsByAuthors = client.ExecuteAndThrowOnError(commitPerAuthorArgs);
+			if (!string.IsNullOrWhiteSpace(this.Until))
+			{
+				commitPerAuthorArgs += $" --until=\"{this.Until}\"";
+			}
+
+			GitNativeOperationResult commitsByAuthors = client.ExecuteAndThrowOnError(commitPerAuthorArgs);
 			Console.WriteLine("# Commits per author");
 			Console.WriteLine();
 			Console.WriteLine(commitsByAuthors.StandardOutput);
@@ -50,23 +52,32 @@ namespace SimpleGitStats
 
 			Console.WriteLine("# Changed lines per author");
 			Console.WriteLine();
-			foreach (var info in authorInfos.OrderByDescending(info => info.Inserted)) Console.WriteLine(info);
+			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
+			{
+				Console.WriteLine(info);
+			}
 
 
-			foreach (var info in authorInfos.OrderByDescending(info => info.Inserted))
+			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
 			{
 				Console.WriteLine($"Top 5 insertions by {info.AuthorName}:");
 
 				var pairs = info.MostInserted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
-				foreach (var pair in pairs) Console.WriteLine($"{pair.Key}\t{pair.Value}");
+				foreach (var pair in pairs)
+				{
+					Console.WriteLine($"{pair.Key}\t{pair.Value}");
+				}
 			}
 
-			foreach (var info in authorInfos.OrderByDescending(info => info.Deleted))
+			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Deleted))
 			{
 				Console.WriteLine($"Top 5 deletions by {info.AuthorName}:");
 
 				var pairs = info.MostDeleted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
-				foreach (var pair in pairs) Console.WriteLine($"{pair.Key}\t{pair.Value}");
+				foreach (var pair in pairs)
+				{
+					Console.WriteLine($"{pair.Key}\t{pair.Value}");
+				}
 			}
 
 			Console.WriteLine();
@@ -78,37 +89,49 @@ namespace SimpleGitStats
 			var mostInserted = new Dictionary<string, int>();
 			var mostDeleted = new Dictionary<string, int>();
 
-			foreach (var line in authorsAndCommits)
+			foreach (string line in authorsAndCommits)
 			{
-				if (string.IsNullOrEmpty(line)) continue;
+				if (string.IsNullOrEmpty(line))
+				{
+					continue;
+				}
 
-				var authorName = line.Split("\t")[1];
-				var byAuthor = client.ExecuteAndThrowOnError(
+				string authorName = line.Split("\t")[1];
+				GitNativeOperationResult byAuthor = client.ExecuteAndThrowOnError(
 					$"log -w --no-merges --since=\"1 January, 2018\" --author=\"{authorName}\" --format= --numstat");
 
-				var inserted = 0;
-				var deleted = 0;
+				int inserted = 0;
+				int deleted = 0;
 
 				if (byAuthor.StandardOutput.Length > 0)
 				{
 					Log.Logger.Debug($"PARSING STATS FOR {authorName}");
 
-					foreach (var file in byAuthor.StandardOutput.Split(Environment.NewLine))
+					foreach (string file in byAuthor.StandardOutput.Split(Environment.NewLine))
 					{
-						if (string.IsNullOrEmpty(file)) continue;
+						if (string.IsNullOrEmpty(file))
+						{
+							continue;
+						}
 
 						var chunks = file.Split("\t");
-						int.TryParse(chunks[0], out var v1);
-						int.TryParse(chunks[1], out var v2);
-						var filename = chunks[2];
+						int.TryParse(chunks[0], out int v1);
+						int.TryParse(chunks[1], out int v2);
+						string filename = chunks[2];
 						Debug.Assert(chunks.Length == 3);
 
-						if (Ignored.IsIgnored(filename)) continue;
+						if (Ignored.IsIgnored(filename))
+						{
+							continue;
+						}
 
 						inserted += v1;
 						deleted += v2;
 
-						if (v1 > 1000) Console.WriteLine($">>>> MAYBE YOU NEED TO IGNORE IN {nameof(Ignored)}.cs? {filename}");
+						if (v1 > 1000)
+						{
+							Console.WriteLine($">>>> MAYBE YOU NEED TO IGNORE IN {nameof(Ignored)}.cs? {filename}");
+						}
 
 						mostInserted.AddValue(filename, inserted);
 						mostDeleted.AddValue(filename, deleted);
@@ -120,7 +143,5 @@ namespace SimpleGitStats
 
 			return authorInfos;
 		}
-
-		#endregion
 	}
 }

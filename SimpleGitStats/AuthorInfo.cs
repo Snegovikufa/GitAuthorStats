@@ -16,16 +16,16 @@ namespace SimpleGitStats
 			Dictionary<string, int> mostInserted,
 			Dictionary<string, int> mostDeleted)
 		{
-			AuthorName = authorName;
-			Inserted = inserted;
-			Deleted = deleted;
-			MostInserted = mostInserted;
-			MostDeleted = mostDeleted;
+			this.AuthorName = authorName;
+			this.Inserted = inserted;
+			this.Deleted = deleted;
+			this.MostInserted = mostInserted;
+			this.MostDeleted = mostDeleted;
 		}
 
 		public override string ToString()
 		{
-			return $"{AuthorName}\tINSERTED: {Inserted}\tDELETED: {Deleted}";
+			return $"{this.AuthorName}\tINSERTED: {this.Inserted}\tDELETED: {this.Deleted}";
 		}
 	}
 }

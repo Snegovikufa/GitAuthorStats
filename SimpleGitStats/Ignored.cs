@@ -4,7 +4,7 @@ namespace SimpleGitStats
 {
 	internal class Ignored
 	{
-		public static string[] IgnoredExtensions = new string[]
+		internal static string[] IgnoredExtensions =
 		{
 			".csproj",
 			".svg",
@@ -14,23 +14,31 @@ namespace SimpleGitStats
 			".xml",
 			".testdata.js",
 			"EtalonActivity.xaml",
-			"EtalonActivityV3.xaml",
+			"EtalonActivityV3.xaml"
 		};
 
-		public static string[] IgnoredPaths = new string[]
+		internal static string[] IgnoredPaths =
 		{
-			"CadesSigner",
+			"CadesSigner"
 		};
 
 		public static bool IsIgnored(string filename)
 		{
-			foreach (var ext in Ignored.IgnoredExtensions)
+			foreach (string ext in IgnoredExtensions)
+			{
 				if (filename.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
+				{
 					return true;
+				}
+			}
 
-			foreach (var path in Ignored.IgnoredPaths)
+			foreach (string path in IgnoredPaths)
+			{
 				if (filename.StartsWith(path, StringComparison.OrdinalIgnoreCase))
+				{
 					return true;
+				}
+			}
 
 			return false;
 		}
