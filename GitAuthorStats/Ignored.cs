@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleGitStats
+namespace GitAuthorStats
 {
 	internal class Ignored
 	{

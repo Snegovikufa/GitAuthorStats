@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SimpleGitStats
+namespace GitAuthorStats
 {
 	internal static class DictionaryExt
 	{

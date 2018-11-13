@@ -6,7 +6,7 @@ using System.Threading;
 using Serilog;
 using Serilog.Core;
 
-namespace SimpleGitStats
+namespace GitAuthorStats
 {
 	/// <summary>
 	///   Git parser.

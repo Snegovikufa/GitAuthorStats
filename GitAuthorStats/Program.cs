@@ -5,7 +5,7 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Serilog;
 
-namespace SimpleGitStats
+namespace GitAuthorStats
 {
 	internal class Program
 	{
