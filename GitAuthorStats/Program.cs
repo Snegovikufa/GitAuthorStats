@@ -98,7 +98,7 @@ namespace GitAuthorStats
 
 				string authorName = line.Split("\t")[1];
 				GitNativeOperationResult byAuthor = client.ExecuteAndThrowOnError(
-					$"log -w --no-merges --since=\"1 January, 2018\" --author=\"{authorName}\" --format= --numstat");
+					$"log --ignore-all-space --no-merges --since=\"1 January, 2018\" --author=\"{authorName}\" --format= --numstat");
 
 				int inserted = 0;
 				int deleted = 0;
@@ -128,7 +128,7 @@ namespace GitAuthorStats
 						inserted += v1;
 						deleted += v2;
 
-						if (v1 > 1000)
+						if (v1 > 500)
 						{
 							Console.WriteLine($">>>> MAYBE YOU NEED TO IGNORE IN {nameof(Ignored)}.cs? {filename}");
 						}

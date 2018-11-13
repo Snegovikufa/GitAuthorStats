@@ -14,7 +14,8 @@ namespace GitAuthorStats
 			".xml",
 			".testdata.js",
 			"EtalonActivity.xaml",
-			"EtalonActivityV3.xaml"
+			"EtalonActivityV3.xaml",
+			".Designer.cs",
 		};
 
 		internal static string[] IgnoredPaths =
