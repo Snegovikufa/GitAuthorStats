@@ -17,6 +17,9 @@ namespace GitAuthorStats
 
 		[Option(Description = "Until <date>. For example, 31 December, 2018")]
 		public string Until { get; set; }
+		
+		[Option(Description = "Output file")]
+		public string Output { get; set; }
 
 		public static int Main(string[] args)
 		{
@@ -41,53 +44,57 @@ namespace GitAuthorStats
 				commitPerAuthorArgs += $" --until=\"{this.Until}\"";
 			}
 
-			GitNativeOperationResult commitsByAuthors = client.ExecuteAndThrowOnError(commitPerAuthorArgs);
-			Console.WriteLine("# Commits per author");
-			Console.WriteLine();
-			Console.WriteLine(commitsByAuthors.StandardOutput);
-
-			var authorsAndCommits = commitsByAuthors.StandardOutput.Split(Environment.NewLine);
-
-			var authorInfos = ParseChangedByAuthors(authorsAndCommits, client);
-
-			Console.WriteLine("# Changed lines per author");
-			Console.WriteLine();
-			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
+			using (IWriter writer = string.IsNullOrWhiteSpace(Output) ? (IWriter) new ConsoleWriter() : new FileWriter(Output))
 			{
-				Console.WriteLine(info);
-			}
+				GitNativeOperationResult commitsByAuthors = client.ExecuteAndThrowOnError(commitPerAuthorArgs);
+				writer.WriteLine("# Commits per author");
+				writer.WriteLine();
+				writer.WriteLine(commitsByAuthors.StandardOutput);
 
+				var authorsAndCommits = commitsByAuthors.StandardOutput.Split(Environment.NewLine);
 
-			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
-			{
-				Console.WriteLine($"Top 5 insertions by {info.AuthorName}:");
+				var authorInfos = ParseChangedByAuthors(authorsAndCommits, client, writer);
 
-				var pairs = info.MostInserted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
-				foreach (var pair in pairs)
+				writer.WriteLine();
+				writer.WriteLine("# Changed lines per author");
+				writer.WriteLine();
+				foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
 				{
-					Console.WriteLine($"{pair.Key}\t{pair.Value}");
+					writer.WriteLine(info.ToString());
 				}
-			}
 
-			foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Deleted))
-			{
-				Console.WriteLine($"Top 5 deletions by {info.AuthorName}:");
 
-				var pairs = info.MostDeleted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
-				foreach (var pair in pairs)
+				foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Inserted))
 				{
-					Console.WriteLine($"{pair.Key}\t{pair.Value}");
-				}
-			}
+					writer.WriteLine();
+					writer.WriteLine($"Top 5 insertions by {info.AuthorName}:");
 
-			Console.WriteLine();
+					var pairs = info.MostInserted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
+					foreach (var pair in pairs)
+					{
+						writer.WriteLine($"{pair.Key}\t{pair.Value}");
+					}
+				}
+
+				foreach (AuthorInfo info in authorInfos.OrderByDescending(info => info.Deleted))
+				{
+					writer.WriteLine();
+					writer.WriteLine($"Top 5 deletions by {info.AuthorName}:");
+
+					var pairs = info.MostDeleted.OrderByDescending(pair => pair.Value).Take(5).ToArray();
+					foreach (var pair in pairs)
+					{
+						writer.WriteLine($"{pair.Key}\t{pair.Value}");
+					}
+				}
+
+				writer.WriteLine();
+			}
 		}
 
-		private static List<AuthorInfo> ParseChangedByAuthors(string[] authorsAndCommits, GitNativeClient client)
+		private static List<AuthorInfo> ParseChangedByAuthors(string[] authorsAndCommits, GitNativeClient client, IWriter writer)
 		{
 			var authorInfos = new List<AuthorInfo>();
-			var mostInserted = new Dictionary<string, int>();
-			var mostDeleted = new Dictionary<string, int>();
 
 			foreach (string line in authorsAndCommits)
 			{
@@ -102,6 +109,8 @@ namespace GitAuthorStats
 
 				int inserted = 0;
 				int deleted = 0;
+				var mostInserted = new Dictionary<string, int>();
+				var mostDeleted = new Dictionary<string, int>();
 
 				if (byAuthor.StandardOutput.Length > 0)
 				{
@@ -130,11 +139,11 @@ namespace GitAuthorStats
 
 						if (v1 > 500)
 						{
-							Console.WriteLine($">>>> MAYBE YOU NEED TO IGNORE IN {nameof(Ignored)}.cs? {filename}");
+							writer.WriteLine($">>>> MAYBE YOU NEED TO IGNORE IN {nameof(Ignored)}.cs? {filename}");
 						}
 
-						mostInserted.AddValue(filename, inserted);
-						mostDeleted.AddValue(filename, deleted);
+						mostInserted.AddValue(filename, v1);
+						mostDeleted.AddValue(filename, v2);
 					}
 
 					authorInfos.Add(new AuthorInfo(authorName, inserted, deleted, mostInserted, mostDeleted));
