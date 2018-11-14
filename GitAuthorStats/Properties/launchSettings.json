@@ -2,7 +2,7 @@
   "profiles": {
     "SimpleGitStats": {
       "commandName": "Project",
-      "commandLineArgs": "--since \"1 January, 2018\" D:\\Projects\\Sungero"
+      "commandLineArgs": ""
     }
   }
 }
