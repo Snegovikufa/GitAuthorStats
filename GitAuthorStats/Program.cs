@@ -92,7 +92,7 @@ namespace GitAuthorStats
 			}
 		}
 
-		private static List<AuthorInfo> ParseChangedByAuthors(string[] authorsAndCommits, GitNativeClient client, IWriter writer)
+		private List<AuthorInfo> ParseChangedByAuthors(string[] authorsAndCommits, GitNativeClient client, IWriter writer)
 		{
 			var authorInfos = new List<AuthorInfo>();
 
@@ -104,8 +104,14 @@ namespace GitAuthorStats
 				}
 
 				string authorName = line.Split("\t")[1];
-				GitNativeOperationResult byAuthor = client.ExecuteAndThrowOnError(
-					$"log --ignore-all-space --no-merges --since=\"1 January, 2018\" --author=\"{authorName}\" --format= --numstat");
+				string args = $"log --ignore-all-space --no-merges --author=\"{authorName}\" --format= --numstat";
+
+				if (!string.IsNullOrWhiteSpace(this.Since))
+				{
+					args +=  $" --since=\"{this.Since}\"";
+				}
+
+				GitNativeOperationResult byAuthor = client.ExecuteAndThrowOnError(args);
 
 				int inserted = 0;
 				int deleted = 0;
