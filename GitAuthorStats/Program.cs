@@ -110,6 +110,10 @@ namespace GitAuthorStats
 				{
 					args +=  $" --since=\"{this.Since}\"";
 				}
+				if (!string.IsNullOrWhiteSpace(this.Until))
+				{
+					args += $" --until=\"{this.Until}\"";
+				}
 
 				GitNativeOperationResult byAuthor = client.ExecuteAndThrowOnError(args);
 
