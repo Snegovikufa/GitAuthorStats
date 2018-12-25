@@ -8,6 +8,8 @@ namespace GitAuthorStats
 		{
 			".csproj",
 			".g.cs",
+			".aff",
+			".dic",
 			".g.i.cs",
 			".svg",
 			".json",
