@@ -26,6 +26,9 @@ namespace GitAuthorStats
 			"EtalonActivity.xaml",
 			"EtalonActivityV3.xaml",
 			".Designer.cs",
+            ".ruleset",
+            ".rtf",
+            ".config"
 		};
 
 		internal static string[] IgnoredPaths =
@@ -34,7 +37,9 @@ namespace GitAuthorStats
 		};
 
 		public static bool IsIgnored(string filename)
-		{
+        {
+            filename = filename.Trim('"', ' ', '\t');
+
 			foreach (string ext in IgnoredExtensions)
 			{
 				if (filename.EndsWith(ext, StringComparison.OrdinalIgnoreCase))
