@@ -28,7 +28,8 @@ namespace GitAuthorStats
 			".Designer.cs",
             ".ruleset",
             ".rtf",
-            ".config"
+            ".config",
+            ".stylecop"
 		};
 
 		internal static string[] IgnoredPaths =
